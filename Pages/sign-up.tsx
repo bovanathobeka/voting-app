@@ -9,14 +9,17 @@ import {
   ScrollView,
   Platform,
   ActivityIndicator,
+  Alert,
 } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import {
-  signInStart,
-  signInSuccess,
-  signInFailure,
+  signUpStart,
+  signUpSuccess,
+  signUpFailure,
 } from '../redux/slices/authSlice';
 import { RootState } from '../redux/store';
+import { createUserWithEmailAndPassword } from 'firebase/auth';
+import { auth } from '@/config';
 
 const SignUpScreen = () => {
   const dispatch = useDispatch();
@@ -25,24 +28,56 @@ const SignUpScreen = () => {
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [role, setRole] = useState<'artist' | 'hoster' | 'voter' | null>(null);
 
-  const handleSignUp = () => {
-    dispatch(signInStart()); // reuse signInStart for loading state
+  const validatePassword = (pass: string) => {
+    const regex = /^(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/;
+    return regex.test(pass);
+  };
 
-    // Simulate sign-up API call — replace with your backend logic
-    setTimeout(() => {
-      if (email && password && fullName) {
-        // fake success
-        dispatch(
-          signInSuccess({
-            email,
-            token: 'fake-signup-token',
-          })
-        );
-      } else {
-        dispatch(signInFailure('Please fill in all fields'));
-      }
-    }, 1500);
+  const handleSignUp = async () => {
+    if (!role) {
+      alert('Please select a role.');
+      return;
+    }
+
+    if (!validatePassword(password)) {
+      Alert.alert(
+        'Weak Password',
+        'Password must be at least 8 characters, include an uppercase letter, a number, and a special character.'
+      );
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      Alert.alert('Password Mismatch', 'Password and confirm password do not match.');
+      return;
+    }
+
+    if (!email || !fullName) {
+      Alert.alert('Missing Fields', 'Please fill in all required fields.');
+      return;
+    }
+
+    dispatch(signUpStart());
+
+  try {
+  const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+  const userData = {
+    uid: userCredential.user.uid,
+    email: userCredential.user.email!,  // non-null assertion here
+    role,
+    fullName,
+  };
+  dispatch(signUpSuccess(userData));
+  Alert.alert('Success', 'Account created successfully!');
+  // Optional: Navigate to role-specific home screen
+} catch (err: any) {
+  dispatch(signUpFailure(err.message));
+  Alert.alert('Sign Up Error', err.message);
+}
+
   };
 
   return (
@@ -75,6 +110,36 @@ const SignUpScreen = () => {
             value={password}
             onChangeText={setPassword}
           />
+          <TextInput
+            placeholder="Confirm Password"
+            placeholderTextColor="#aaa"
+            secureTextEntry
+            style={styles.input}
+            value={confirmPassword}
+            onChangeText={setConfirmPassword}
+          />
+
+          <View style={styles.roleContainer}>
+            {['artist', 'hoster', 'voter'].map((r) => (
+              <TouchableOpacity
+                key={r}
+                style={[
+                  styles.roleButton,
+                  role === r && styles.roleButtonSelected,
+                ]}
+                onPress={() => setRole(r as 'artist' | 'hoster' | 'voter')}
+              >
+                <Text
+                  style={[
+                    styles.roleText,
+                    role === r && styles.roleTextSelected,
+                  ]}
+                >
+                  {r.charAt(0).toUpperCase() + r.slice(1)}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
 
           <TouchableOpacity
             style={[styles.button, loading && { opacity: 0.7 }]}
@@ -151,6 +216,29 @@ const styles = StyleSheet.create({
     marginBottom: 15,
     borderWidth: 1,
     borderColor: '#ddd',
+  },
+  roleContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 15,
+  },
+  roleButton: {
+    flex: 1,
+    padding: 10,
+    marginHorizontal: 4,
+    backgroundColor: '#e0e0e0',
+    borderRadius: 5,
+    alignItems: 'center',
+  },
+  roleButtonSelected: {
+    backgroundColor: '#6200ee',
+  },
+  roleText: {
+    color: '#000',
+    fontWeight: '600',
+  },
+  roleTextSelected: {
+    color: '#fff',
   },
   button: {
     backgroundColor: '#6a11cb',

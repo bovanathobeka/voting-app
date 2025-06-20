@@ -1,7 +1,15 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
+interface User {
+  uid: string;
+  email: string;
+  role: 'artist' | 'hoster' | 'voter';
+  fullName: string;
+}
+
+
 interface AuthState {
-  user: { email: string; token?: string } | null;
+  user: User | null;
   loading: boolean;
   error: string | null;
 }
@@ -16,15 +24,16 @@ const authSlice = createSlice({
   name: 'auth',
   initialState,
   reducers: {
-    signInStart(state) {
+     signUpStart(state) {
       state.loading = true;
       state.error = null;
     },
-    signInSuccess(state, action: PayloadAction<{ email: string; token?: string }>) {
+   signUpSuccess(state, action: PayloadAction<User>) {
       state.loading = false;
       state.user = action.payload;
+      state.error = null;
     },
-    signInFailure(state, action: PayloadAction<string>) {
+    signUpFailure(state, action: PayloadAction<string>) {
       state.loading = false;
       state.error = action.payload;
     },
@@ -36,5 +45,5 @@ const authSlice = createSlice({
   },
 });
 
-export const { signInStart, signInSuccess, signInFailure, signOut } = authSlice.actions;
+export const { signUpStart, signUpSuccess, signUpFailure, signOut } = authSlice.actions;
 export default authSlice.reducer;
