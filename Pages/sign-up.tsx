@@ -19,7 +19,10 @@ import {
 } from '../redux/slices/authSlice';
 import { RootState } from '../redux/store';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
-import { auth } from '@/config';
+import { auth } from '@/firebase/config';
+import { doc, setDoc } from "firebase/firestore";
+import { saveUserProfile } from '@/firebase/helper';
+import { sendEmailVerification } from "firebase/auth";
 
 const SignUpScreen = () => {
   const dispatch = useDispatch();
@@ -62,21 +65,34 @@ const SignUpScreen = () => {
 
     dispatch(signUpStart());
 
-  try {
-  const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-  const userData = {
-    uid: userCredential.user.uid,
-    email: userCredential.user.email!,  // non-null assertion here
-    role,
-    fullName,
-  };
-  dispatch(signUpSuccess(userData));
-  Alert.alert('Success', 'Account created successfully!');
-  // Optional: Navigate to role-specific home screen
-} catch (err: any) {
-  dispatch(signUpFailure(err.message));
-  Alert.alert('Sign Up Error', err.message);
-}
+    try {
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+
+      if (!user.email) throw new Error("Email not available");
+
+      // Send verification email
+       await sendEmailVerification(user);
+
+       Alert.alert("Verify Your Email", "We've sent you a verification link.");
+
+      // Save user profile to Firestore
+      await saveUserProfile(user.uid, user.email!, fullName, role);
+
+      const userData = {
+        uid: userCredential.user.uid,
+        email: userCredential.user.email!,  
+        role,
+        fullName,
+        };
+
+      dispatch(signUpSuccess(userData));
+         Alert.alert('Success', 'Account created successfully!');
+
+      } catch (err: any) {
+        dispatch(signUpFailure(err.message));
+        Alert.alert('Sign Up Error', err.message);
+      }
 
   };
 
