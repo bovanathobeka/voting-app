@@ -3,12 +3,13 @@ import { Provider } from 'react-redux';
 import { store } from '@/redux/store';
 import SignUpScreen from '@/Pages/sign-up';
 import SignInScreen from '@/Pages/sign-in';
+import EmailVerificationScreen from '@/Pages/verify';
 // import Navigation from './Navigation'; 
 
 export default function App() {
   return (
     <Provider store={store}>
-      <SignUpScreen />
+      < EmailVerificationScreen/>
     </Provider>
   );
 }
