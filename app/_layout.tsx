@@ -9,7 +9,7 @@ import EmailVerificationScreen from '@/Pages/verify';
 export default function App() {
   return (
     <Provider store={store}>
-      < EmailVerificationScreen/>
+      < SignUpScreen/>
     </Provider>
   );
 }

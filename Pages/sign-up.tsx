@@ -68,10 +68,13 @@ const SignUpScreen = () => {
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
+      console.log('User created:', user);
+      console.log('Email verified:', user.emailVerified);
 
       if (!user.email) throw new Error("Email not available");
 
       // Send verification email
+       auth.languageCode = 'en';
        await sendEmailVerification(user);
 
        Alert.alert("Verify Your Email", "We've sent you a verification link.");
@@ -95,6 +98,8 @@ const SignUpScreen = () => {
       }
 
   };
+
+  
 
   return (
     <ScrollView contentContainerStyle={styles.scrollContainer}>
