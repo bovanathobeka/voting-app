@@ -23,6 +23,8 @@ import { auth } from '@/firebase/config';
 import { doc, setDoc } from "firebase/firestore";
 import { saveUserProfile } from '@/firebase/helper';
 import { sendEmailVerification } from "firebase/auth";
+// import { sendVerificationCode } from 'firebase/auth';
+import { firestore } from '@/firebase/config';
 
 const SignUpScreen = () => {
   const dispatch = useDispatch();
@@ -65,11 +67,15 @@ const SignUpScreen = () => {
 
     dispatch(signUpStart());
 
+    let user;
     try {
       const userCredential = await createUserWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
-      console.log('User created:', user);
-      console.log('Email verified:', user.emailVerified);
+       
+
+
+
+     
 
       if (!user.email) throw new Error("Email not available");
 
@@ -96,6 +102,7 @@ const SignUpScreen = () => {
         dispatch(signUpFailure(err.message));
         Alert.alert('Sign Up Error', err.message);
       }
+  
 
   };
 
