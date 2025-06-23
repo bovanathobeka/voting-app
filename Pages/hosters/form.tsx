@@ -4,6 +4,8 @@ import * as ImagePicker from 'expo-image-picker';
 import { useDispatch, useSelector } from 'react-redux';
 import { setHosterName } from '../../redux/slices/hostersSlice';
 import { RootState } from '../../redux/store';
+import { doc, setDoc } from 'firebase/firestore';
+import { auth, firestore } from '../../firebase/config';
 
 export default function FormHost() {
   const dispatch = useDispatch();
@@ -51,9 +53,40 @@ export default function FormHost() {
     }
   };
 
-  const handleSubmit = () => {
-    console.log({ companyName, idNo, accountNo, price: 'R200', images });
-  };
+  const handleSubmit = async () => {
+  const user = auth.currentUser;
+
+  if (!user) {
+    Alert.alert('Not signed in', 'Please sign in to submit your form.');
+    return;
+  }
+
+    if (!companyName.trim() || !idNo.trim() || !accountNo.trim() || images.length === 0) {
+    Alert.alert('Missing Fields', 'Please fill in all fields and upload at least one image.');
+    return;
+  }
+
+  console.log('Validation Check:', { companyName, idNo, accountNo, imagesLength: images.length });
+
+
+  try {
+    const formData = {
+      name: companyName,
+      idNo,
+      accountNo,
+      price: 'R200',
+      images,
+      submittedAt: new Date(),
+    };
+
+    await setDoc(doc(firestore, 'hosters', user.uid), formData);
+
+    Alert.alert('Success', 'Form submitted successfully!');
+  } catch (error) {
+    console.error('Error saving form:', error);
+    Alert.alert('Error', 'Failed to submit form.');
+  }
+};
 
   const renderAddSlide = () => (
     <View style={styles.imageSwipe}>
