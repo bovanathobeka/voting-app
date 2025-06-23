@@ -60,11 +60,26 @@ export default function FormHost() {
     Alert.alert('Not signed in', 'Please sign in to submit your form.');
     return;
   }
+    if (!companyName) {
+      alert('Please make sure you filled in Company name.');
+      return;
+    }
 
-    if (!companyName.trim() || !idNo.trim() || !accountNo.trim() || images.length === 0) {
-    Alert.alert('Missing Fields', 'Please fill in all fields and upload at least one image.');
-    return;
-  }
+        if (!accountNo){
+      alert('Please make sure you filled in accountNo')
+      return;
+    }
+
+           if (!idNo){
+      alert('Please make sure you filled in id number')
+      return;
+    }
+
+if (images.length === 0) {
+  alert('Missing Images, Please upload at least one image.');
+  return;
+}
+
 
   console.log('Validation Check:', { companyName, idNo, accountNo, imagesLength: images.length });
 

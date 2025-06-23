@@ -48,20 +48,19 @@ const SignUpScreen = () => {
     }
 
     if (!validatePassword(password)) {
-      Alert.alert(
-        'Weak Password',
-        'Password must be at least 8 characters, include an uppercase letter, a number, and a special character.'
+      alert(
+        'Weak Password, Password must be at least 8 characters, include an uppercase letter, a number, and a special character.'
       );
       return;
     }
 
     if (password !== confirmPassword) {
-      Alert.alert('Password Mismatch', 'Password and confirm password do not match.');
+      alert('Password Mismatch, Password and confirm password do not match.');
       return;
     }
 
     if (!email || !fullName) {
-      Alert.alert('Missing Fields', 'Please fill in all required fields.');
+      alert('Missing Fields, Please fill in all required fields.');
       return;
     }
 
